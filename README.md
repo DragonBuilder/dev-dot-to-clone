@@ -11,7 +11,6 @@ Let's build clone of a blogging app. I'll be attempting to build a clone of [dev
 - Bloggers need to authenticate their account before posting a blog.
 
 ## Tech Stack
-
 - Go language
 - Firestore
 
