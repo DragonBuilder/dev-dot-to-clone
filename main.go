@@ -1,39 +1,52 @@
 package main
 
 import (
+	"html/template"
+	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-// func main() {
-// 	r := mux.NewRouter()
-// 	r.HandleFunc("/", IndexHandler).Methods("GET")
-// 	r.HandleFunc("/blog/create", CreateBlogHandler).Methods("GET", "POST")
-
-// 	// http.Handle("/", r)
-
-// 	slog.Info("Starting server on port 8080")
-
-// 	if err := http.ListenAndServe(":8080", r); err != nil {
-// 		slog.Error("Error starting server: %v", err)
-// 	}
-// }
-
 func main() {
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	r.Static("/static", "./static")
+	// r.LoadHTMLGlob("templates/*")
+	html := template.Must(template.ParseFiles(
+		"templates/index.html",
+		"templates/create-blog.html",
+	))
+	r.SetHTMLTemplate(html)
+
+	r.GET("/", IndexHandler)
+	r.GET("/ping", PingHandler)
+	r.GET("/blog/create", CreateBlogFormHandler)
+	r.POST("/blog/create", CreateBlogHandler)
+
+	slog.Info("Starting server on port 8080")
 	r.Run() // listen and serve on 0.0.0.0:8080
 }
 
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
+func IndexHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
 
-func CreateBlogHandler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello World"))
+func PingHandler(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"message": "pong",
+	})
+}
+
+func CreateBlogFormHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "create-blog.html", gin.H{})
+}
+
+func CreateBlogHandler(c *gin.Context) {
+	title := c.PostForm("title")
+	content := c.PostForm("content")
+	log.Printf("Title: %s, \nContent:\n%s", title, content)
+
+	// log.Info(fmt.Sprintf("Title: %s, \nContent:\n%s", title, content))
+	c.HTML(http.StatusOK, "create-blog.html", gin.H{})
 }
